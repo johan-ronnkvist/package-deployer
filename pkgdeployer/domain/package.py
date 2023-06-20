@@ -13,3 +13,6 @@ class Package:
     @property
     def name(self) -> str:
         return self._name
+
+    def __hash__(self):
+        return hash(self.uuid)

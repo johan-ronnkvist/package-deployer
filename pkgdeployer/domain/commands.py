@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 from uuid import UUID
-
-
-class Command:
-    """Commands represent the intent to change the state of the system."""
-    pass
+from pkgdeployer.services.messaging import Command
 
 
 @dataclass(frozen=True)
