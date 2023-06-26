@@ -16,3 +16,6 @@ class Package:
 
     def __hash__(self):
         return hash(self.uuid)
+
+    def __eq__(self, other):
+        return self.uuid == other.uuid and self.name == other.name

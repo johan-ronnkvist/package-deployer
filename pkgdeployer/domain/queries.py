@@ -3,8 +3,8 @@ from typing import Optional
 from uuid import UUID
 
 from pkgdeployer.domain.package import Package
-from pkgdeployer.repository.abstract_repository import UnitOfWork
 from pkgdeployer.services.messaging import Query
+from repository import Transaction
 
 
 @dataclass(frozen=True)
@@ -17,9 +17,9 @@ class FindPackageResult:
     package: Optional[Package]
 
 
-def find_package(query: FindPackageQuery, unit_of_work: UnitOfWork) -> FindPackageResult:
-    with unit_of_work:
-        return FindPackageResult(unit_of_work.repository.find(query.uuid))
+def find_package(query: FindPackageQuery, transaction: Transaction) -> FindPackageResult:
+    with transaction:
+        return FindPackageResult(transaction.packages.find(query.uuid))
 
 
 @dataclass(frozen=True)
@@ -33,6 +33,6 @@ class ListPackagesResult:
     packages: list[Package]
 
 
-def list_packages(query: ListPackagesQuery, unit_of_work: UnitOfWork) -> ListPackagesResult:
-    with unit_of_work:
-        return ListPackagesResult(unit_of_work.repository.list(query.offset, query.count))
+def list_packages(query: ListPackagesQuery, transaction: Transaction) -> ListPackagesResult:
+    with transaction:
+        return ListPackagesResult(transaction.packages.list(query.offset, query.count))

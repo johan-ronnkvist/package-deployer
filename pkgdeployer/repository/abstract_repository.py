@@ -5,6 +5,14 @@ from uuid import UUID
 from pkgdeployer.domain.package import Package
 
 
+class PackageInsertError(Exception):
+    pass
+
+
+class PackageDeleteError(Exception):
+    pass
+
+
 class Repository(ABC):
     @abstractmethod
     def insert(self, package: Package):

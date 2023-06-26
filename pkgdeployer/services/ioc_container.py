@@ -35,8 +35,8 @@ class IoCInstanceEntry:
 
 
 class IoCFactoryEntry:
-    def __init__(self, factory, **kwargs):
-        self._factory = factory
+    def __init__(self, ioc_factory, **kwargs):
+        self._factory = ioc_factory
         self._kwargs = kwargs
 
     def resolve(self, **kwargs):

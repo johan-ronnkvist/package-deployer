@@ -1,35 +1,4 @@
-import uuid
-
-import pytest
-
-from domain.package import Package
-from repository import MemoryTransaction
-from repository import SQLTransaction, SQLModelDatabase
-
-
-@pytest.fixture
-def package() -> Package:
-    return Package(uuid.uuid4(), 'test_package')
-
-
-@pytest.fixture
-def database() -> SQLModelDatabase:
-    return SQLModelDatabase(':memory:')
-
-
-@pytest.fixture
-def memory_transaction() -> MemoryTransaction:
-    return MemoryTransaction()
-
-
-@pytest.fixture
-def sql_transaction(database) -> SQLTransaction:
-    return SQLTransaction(database)
-
-
-@pytest.fixture(params=[pytest.param("memory_transaction"), pytest.param("sql_transaction")])
-def transaction(request):
-    return request.getfixturevalue(request.param)
+import time
 
 
 class TestTransactions:
@@ -37,14 +6,18 @@ class TestTransactions:
         with transaction as change:
             change.packages.insert(package)
             assert package in change.packages
-        assert package not in change.packages
+
+        with transaction as change:
+            assert package not in change.packages
 
     def test_transaction_commit_persists_changes(self, transaction, package):
         with transaction:
             transaction.packages.insert(package)
             assert package in transaction.packages
             transaction.commit()
-        assert package in transaction.packages
+
+        with transaction:
+            assert package in transaction.packages
 
     def test_transaction_rollback_reverts_changes(self, transaction, package):
         with transaction:
@@ -52,4 +25,37 @@ class TestTransactions:
             assert package in transaction.packages
             transaction.rollback()
             assert package not in transaction.packages
-        assert package not in transaction.packages
+
+    def test_accessing_repository_on_transaction(self, transaction):
+        assert transaction.packages is None
+        with transaction:
+            assert transaction.packages is not None
+        assert transaction.packages is None
+
+    def test_transaction_delete_rollback(self, transaction, package):
+        uuid = package.uuid
+        with transaction:
+            transaction.packages.insert(package)
+            transaction.commit()
+
+        with transaction:
+            assert package in transaction.packages
+            transaction.packages.delete(package.uuid)
+            # Unless we commit, the package should still be there - we're in a transaction
+            assert package in transaction.packages
+
+        with transaction:
+            assert package in transaction.packages
+
+    def test_transaction_delete_commit(self, transaction, package):
+        with transaction:
+            transaction.packages.insert(package)
+            transaction.commit()
+
+        with transaction:
+            assert package in transaction.packages
+            transaction.packages.delete(package.uuid)
+            transaction.commit()
+
+        with transaction:
+            assert package not in transaction.packages

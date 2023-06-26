@@ -8,8 +8,8 @@ from pkgdeployer.services.messaging import MessageBus, Command, Event, Query, Ha
 
 
 @pytest.fixture()
-def messagebus() -> MessageBus:
-    return MessageBus()
+def messagebus(transaction) -> MessageBus:
+    return MessageBus(transaction)
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class TestMessageBus:
         handler = Mock()
         messagebus.register_handler(msg_type, handler)
         messagebus.publish(msg_type())
-        handler.assert_called_once_with(msg_type())
+        handler.assert_called_once()
 
     def test_event_types_can_have_multiple_handlers(self, messagebus):
         handler1 = Mock()
