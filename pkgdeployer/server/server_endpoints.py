@@ -24,9 +24,9 @@ def packages_endpoints(container: IoCContainer) -> APIRouter:
         try:
             messagebus = container.resolve(MessageBus)
             result = messagebus.publish(ListPackagesQuery(offset=offset, count=count))
+            return {'result': result}
         except Exception as error:
             raise HTTPException(status_code=500, detail=f"Internal Server Error: {error}")
-        return {'result': 'get_packages'}
 
     @router.post("/")
     def create_package():

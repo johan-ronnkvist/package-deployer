@@ -13,16 +13,21 @@ class CreatePackageCommand(Command):
 
 
 def create_package(command: CreatePackageCommand, transaction: Transaction) -> None:
+    if not command.uuid:
+        raise ValueError("uuid cannot be empty")
+    if not command.name:
+        raise ValueError("name cannot be empty")
     with transaction:
         transaction.packages.insert(Package(command.uuid, command.name))
         transaction.commit()
 
 
 @dataclass(frozen=True)
-class RemovePackageCommand(Command):
+class DeletePackageCommand(Command):
     uuid: UUID
 
 
-def remove_package(command: RemovePackageCommand, transaction: Transaction) -> None:
+def delete_package(command: DeletePackageCommand, transaction: Transaction) -> None:
     with transaction:
-        transaction.packages.remove(command.uuid)
+        transaction.packages.delete(command.uuid)
+        transaction.commit()

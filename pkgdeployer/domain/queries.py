@@ -18,6 +18,8 @@ class FindPackageResult:
 
 
 def find_package(query: FindPackageQuery, transaction: Transaction) -> FindPackageResult:
+    if query.uuid is None:
+        raise ValueError("uuid cannot be None")
     with transaction:
         return FindPackageResult(transaction.packages.find(query.uuid))
 
@@ -34,5 +36,9 @@ class ListPackagesResult:
 
 
 def list_packages(query: ListPackagesQuery, transaction: Transaction) -> ListPackagesResult:
+    if query.offset < 0:
+        raise ValueError("offset cannot be negative")
+    if query.count < 0:
+        raise ValueError("count cannot be negative")
     with transaction:
         return ListPackagesResult(transaction.packages.list(query.offset, query.count))

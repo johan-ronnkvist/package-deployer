@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from domain.commands import CreatePackageCommand
+from pkgdeployer.domain.commands import CreatePackageCommand, create_package
 from pkgdeployer.domain.queries import ListPackagesQuery, list_packages
 from pkgdeployer.repository import Transaction, SQLTransaction, SQLModelSessionFactory
 from pkgdeployer.services.ioc_container import IoCContainer
@@ -16,17 +16,18 @@ def create_testing_content(container: IoCContainer):
 
 def configure_messagebus(messagebus: MessageBus):
     messagebus.register_handler(ListPackagesQuery, list_packages)
+    messagebus.register_handler(CreatePackageCommand, create_package)
 
 
 def bootstrap() -> IoCContainer:
     container = IoCContainer()
-    container.register(SQLSessionFactory, SQLModelSessionFactory(":memory:"))
+    container.register(SQLSessionFactory, SQLModelSessionFactory(":memory:", echo=True))
     container.register(Transaction, SQLTransaction)
     container.register(MessageBus, MessageBus(container.resolve(Transaction)))
 
     configure_messagebus(container.resolve(MessageBus))
 
-
+    create_testing_content(container)
 
     return container
 
