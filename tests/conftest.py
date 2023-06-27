@@ -1,4 +1,5 @@
 import uuid
+import os.path as path
 
 import pytest
 
@@ -15,16 +16,26 @@ def package() -> Package:
 
 
 @pytest.fixture
-def session_factory() -> SQLModelSessionFactory:
+def memory_session() -> SQLModelSessionFactory:
     return SQLModelSessionFactory(':memory:')
 
 
 @pytest.fixture
-def sql_transaction(session_factory) -> Transaction:
-    return SQLTransaction(session_factory)
+def file_session(tmp_path) -> SQLModelSessionFactory:
+    return SQLModelSessionFactory(path.join(tmp_path, 'test.db'))
 
 
-@pytest.fixture(params=[pytest.param("sql_transaction")])
+@pytest.fixture
+def sql_memory_transaction(memory_session) -> Transaction:
+    return SQLTransaction(memory_session)
+
+
+@pytest.fixture
+def sql_file_transaction(file_session) -> Transaction:
+    return SQLTransaction(file_session)
+
+
+@pytest.fixture(params=[pytest.param("sql_memory_transaction"), pytest.param("sql_file_transaction")])
 def transaction(request) -> Transaction:
     return request.getfixturevalue(request.param)
 
