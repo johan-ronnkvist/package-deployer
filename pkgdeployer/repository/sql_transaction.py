@@ -3,11 +3,11 @@ from abc import ABC, abstractmethod
 from typing import Optional, Protocol, runtime_checkable
 from uuid import uuid4
 
-from sqlmodel import create_engine, Session
+from sqlmodel import create_engine, Session, SQLModel, select, delete
 
 from pkgdeployer.repository import Transaction
 from pkgdeployer.repository.sql_repository import SQLRepository
-from pkgdeployer.repository.sql_models import *
+from pkgdeployer.repository.sql_models import SQLPackage
 
 logging.root.setLevel(logging.DEBUG)
 _logger = logging.getLogger(__name__)
@@ -34,8 +34,12 @@ class MockDataSessionFactory:
         self._factory = factory
 
         with self.create_session() as session:
-            for n in range(100):
-                session.add(SQLPackage(name=f"Package {n}", uuid=uuid4()))
+            result = session.exec(select(SQLPackage))
+            if len(result.all()) < 100:
+                session.delete(result)
+                for n in range(100):
+                    session.add(SQLPackage(name=f"Package {n}", uuid=uuid4()))
+                session.commit()
 
     def create_session(self) -> Session:
         return self._factory.create_session()

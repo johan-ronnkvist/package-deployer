@@ -1,3 +1,4 @@
+import os
 import uuid
 import os.path as path
 
@@ -50,3 +51,8 @@ def messagebus(transaction) -> MessageBus:
 
     return messagebus
 
+
+@pytest.fixture
+def restart_server():
+    server_entrypoint = os.path.join(os.path.dirname(__file__), "..", "pkgdeployer", "server", "entrypoint.py")
+    print(server_entrypoint)

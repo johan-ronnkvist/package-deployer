@@ -63,7 +63,6 @@ class MessageBus:
         self._event_handlers[msg_type].append(handler)
 
     def publish(self, msg: Any) -> Any:
-        _logger.debug(f'Publishing message: {msg}')
         msg_type = type(msg)
         if isinstance(msg, Command):
             if msg_type not in self._command_handlers:
